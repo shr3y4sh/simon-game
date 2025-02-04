@@ -20,14 +20,12 @@ function nextSequence() {
 // KEYPRESS EVENT ON TIME
 
 $("body").one("keypress", function () {
-  // e.stopImmediatePropagation();
+  started = true;
   randomChoosenColor = buttonColors[nextSequence()];
-  console.log(randomChoosenColor);
   gamePattern.push(randomChoosenColor);
   setTimeout(() => {
     buttonFlashing(randomChoosenColor);
   }, 500);
-  console.log(level, gamePattern);
 });
 
 //////////////////////////////////////////////////////////////////
@@ -59,8 +57,6 @@ $(".button").on("click", function () {
     $(this).toggleClass("pressed");
   }, 150);
 
-  console.log(userClickedPattern);
-
   checkAnswer(level);
 });
 
@@ -83,12 +79,25 @@ function buttonFlashing(buttonID) {
 // USER CHECK ANSWER
 
 function checkAnswer(currentLevel) {
-
   for (let i = 0; i < currentLevel; i++) {
     if (gamePattern[i] === userClickedPattern[i]) {
       console.log("Success");
     } else {
+      wrongButton();
       console.log("Wrong");
     }
   }
+}
+
+////////////////////////////////////////////////////////////
+
+function wrongButton() {
+  let audio = new Audio("assets/sounds/wrong.mp3");
+  audio.play();
+
+  $("body").toggleClass("wrong-button");
+  $("#info-bar").html("Game Over");
+  setTimeout(() => {
+    $("body").toggleClass("wrong-button");
+  }, 200);
 }
