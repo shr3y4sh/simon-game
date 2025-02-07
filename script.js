@@ -29,6 +29,7 @@ function nextSequence() {
 
 $("body").one("keypress", function () {
   level++;
+  timesButtonClicked = 0;
   gamePlayRound(level);
 });
 
