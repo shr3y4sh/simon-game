@@ -3,50 +3,50 @@ let buttonColors = ["red", "blue", "green", "yellow"];
 let level = 0;
 let randomChoosenColor;
 let userClickedPattern = [];
-let started = false;
+let timesButtonClicked = 0;
+//////////////////////////////////////////////////////
+
+function gamePlayRound(level) {
+  userClickedPattern = [];
+  $("#info-bar").html(`Level ${level}`);
+  randomChoosenColor = buttonColors[nextSequence()];
+  gamePattern.push(randomChoosenColor);
+  setTimeout(() => {
+    buttonFlashing(randomChoosenColor);
+  }, 800);
+}
+
 ////////////////////////////////////////////////////////
 
 function nextSequence() {
-  userClickedPattern = [];
-  level++;
-  $("#info-bar").html(`Level ${level}`);
-
   let random = Math.floor(Math.random() * 4);
-
   return random;
 }
 
 ///////////////////////////////////////////////////////////////
 // KEYPRESS EVENT ON TIME
+// GAME STARTS, LEVEL = 1
 
 $("body").one("keypress", function () {
-  started = true;
-  randomChoosenColor = buttonColors[nextSequence()];
-  gamePattern.push(randomChoosenColor);
-  setTimeout(() => {
-    buttonFlashing(randomChoosenColor);
-  }, 500);
+  level++;
+  gamePlayRound(level);
 });
-
-//////////////////////////////////////////////////////////////////
-
-// try {
-//   var randomChoosenColor = buttonColors[nextSequence()];
-// } catch {
-//   console.log("nextSequence not called");
-// }
-// gamePattern.push(randomChoosenColor);
-
-// let colorID = `#${randomChoosenColor}`;
 
 ///////////////////////////////////////////////////////////
 // BUTTON CLICK EVENT
 
 $(".button").on("click", function () {
+  timesButtonClicked++;
   let buttonClicked = $(this).attr("id");
-
   userClickedPattern.push(buttonClicked);
 
+  if (gamePattern[timesButtonClicked - 1] !== buttonClicked && level > 0) {
+    console.log(level);
+    wrongButton();
+    return;
+  }
+
+  console.log("User Clicked Pattern", userClickedPattern);
   let audio = new Audio(`assets/sounds/${buttonClicked}.mp3`);
 
   audio.play();
@@ -57,7 +57,10 @@ $(".button").on("click", function () {
     $(this).toggleClass("pressed");
   }, 150);
 
-  checkAnswer(level);
+  if (timesButtonClicked === level) {
+    timesButtonClicked = 0;
+    checkAnswer(level);
+  }
 });
 
 ///////////////////////////////////////////////////////////
@@ -72,20 +75,25 @@ function buttonFlashing(buttonID) {
 
   setTimeout(() => {
     $(button).toggleClass("pressed");
-  }, 150);
+  }, 600);
 }
 
 //////////////////////////////////////////////////////////////
 // USER CHECK ANSWER
 
 function checkAnswer(currentLevel) {
+  let isCorrect = true;
   for (let i = 0; i < currentLevel; i++) {
-    if (gamePattern[i] === userClickedPattern[i]) {
-      console.log("Success");
-    } else {
-      wrongButton();
-      console.log("Wrong");
+    if (gamePattern[i] != userClickedPattern[i]) {
+      isCorrect = false;
+      break;
     }
+  }
+  if (isCorrect) {
+    setTimeout(() => {
+      level++;
+      gamePlayRound(level);
+    }, 1400);
   }
 }
 
@@ -100,4 +108,14 @@ function wrongButton() {
   setTimeout(() => {
     $("body").toggleClass("wrong-button");
   }, 200);
+
+  setTimeout(() => {
+    $("#info-bar").html("Press any key to restart");
+  }, 1600);
+
+  $("body").on("keypress", () => {
+    location.reload();
+  });
 }
+
+/////////////////////////////////////////////////////////////////
